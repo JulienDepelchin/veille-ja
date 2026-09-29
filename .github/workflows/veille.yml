@@ -1,0 +1,39 @@
+name: Veille TA Lille / CAA Douai
+
+on:
+  workflow_dispatch:
+    # Déclenché quotidiennement par le Worker Cloudflare lab-crons
+    # (voir Dashboard_data/cloudflare/lab-crons.js). Pas de `schedule` ici :
+    # GitHub cron est peu fiable pour un horaire précis.
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Mise en place Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installation des dépendances
+        run: pip install -r requirements.txt
+
+      - name: Analyse des nouvelles décisions
+        run: python main.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Commit et push des résultats
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet && echo "Rien à commiter." || \
+          git commit -m "maj veille-ja $(date -u '+%Y-%m-%d')"
+          git push
