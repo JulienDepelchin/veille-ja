@@ -13,7 +13,7 @@ JURIDICTIONS = {
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 # Modèle Claude à utiliser
-CLAUDE_MODEL = "claude-haiku-4-5-20251001"
+CLAUDE_MODEL = "claude-haiku-5-5"
 
 # Prompt d'analyse envoyé à Claude pour chaque décision.
 # Grille de scoring (1 à 5) reprise à l'identique du projet raa-veille (voir

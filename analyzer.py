@@ -15,6 +15,15 @@ PAUSE_RATE_LIMIT = 15
 MAX_RETRIES = 1
 
 
+def _texte_reponse(message: anthropic.types.Message) -> str:
+    """Extrait le bloc texte d'une réponse, qui peut être précédé d'un bloc de
+    réflexion (thinking) — ne pas supposer que content[0] est le texte."""
+    for bloc in message.content:
+        if bloc.type == "text":
+            return bloc.text
+    return ""
+
+
 def _parse_json_response(contenu: str) -> dict:
     contenu = contenu.strip()
     contenu = re.sub(r"^```(?:json)?\s*", "", contenu)
@@ -50,10 +59,11 @@ def analyser_decision_texte(texte: str, client: anthropic.Anthropic) -> dict:
     message = _appel_api_avec_retry(
         client,
         model=CLAUDE_MODEL,
-        max_tokens=512,
+        max_tokens=2000,
+        output_config={"effort": "low"},
         messages=[{"role": "user", "content": prompt}],
     )
-    return _parse_json_response(message.content[0].text)
+    return _parse_json_response(_texte_reponse(message))
 
 
 def analyser_decisions(decisions: list[dict], api_key: str = None) -> list[dict]:
